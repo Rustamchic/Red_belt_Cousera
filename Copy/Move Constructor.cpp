@@ -18,77 +18,112 @@
 #include<chrono>
 #include<random>
 #include<cstdint>
+#include<numeric>
+#include<future>
 #include<string_view>
 using namespace std;
 using namespace std::chrono;
 template<typename T>
 class Vector
 {
-	private:
-	size_t size = 0;
-	T* data = nullptr;
-	size_t capacity = 0;
-	public:
+public:
 	Vector() = default;
-	explicit Vector(size_t s) :  size(s), data(new T[size]), capacity(size){}
-	Vector(const Vector& other): size(new T[other.size]), data(new T[other.data]), capacity(new T[other.capacity])
-	{
-		copy(other.begin(), other.end(), begin());
-	}
-	~Vector()
-	{
-		delete[] data;
-	}
-	size_t Size() const
-	{
-		return size;
-	}
-	size_t Capacity() const
-	{
-		return capacity;
-	}
-	T* begin()
-	{
-		return data;
-	}
-	T* end()
-	{
-		return data + size;
-	}
-	const T* begin() const
-	{
-		return begin();
-	}
-	const T* end() const
-	{
-		return end();
-	}
-	T& operator[](size_t index)
-	{
-		return *(data + index);
-	}
-void Push_Back(const T& value)
-{
-	if(size > capacity)
-	{
-		auto new_cap = capacity == 0 ? 1 : 2 * capacity;
-		auto new_data = new T[new_cap];
-		copy(begin(), end(), new_data);
-		delete[] data;
-		data = new_data;
-		capacity = new_cap;
-	}
-	data[size++] = value;
-}
+	explicit Vector(size_t size);
+	Vector(const Vector& other);
+Vector(Vector&& other);
+void operator=(const Vector& other);
+void operator=(Vector&& other);
+	~Vector();
+	T& operator[](const size_t index);
+	 T* begin();
+	T* end();
+	const T* begin() const;
+	const T* end() const;
+	int size();
+	int capacity();
+private:
+T* Data = nullptr;
+size_t Size = 0;
+size_t Capacity = 0;
 };
+template<typename T>
+Vector<T>::Vector(size_t  size) : Size(size), Data(new T[size]), Capacity(size){}
+template<typename T>
+Vector<T>::Vector(const Vector<T>& other) : Data(new T[other.Capacity]), Size(other.Size), Capacity(other.Capacity)
+{
+	copy(other.begin(), other.end(), begin());
+}
+template<typename T>
+Vector<T>::~Vector()
+	{
+		delete[] Data;
+	}
+template<typename T>
+T& Vector<T>::operator[](const size_t index)
+{
+	return *(Data + index);
+}
+template<typename T>
+void Vector<T>::operator=(const Vector<T>& other)
+{
+	delete[] Data;
+	Data = new T[other.Capacity];
+	Size = other.Size;
+	Capacity = other.Capacity;
+	copy(other.begin(), other.end(), begin());
+}
+template<typename T>
+void Vector<T>::operator=(Vector<T>&& other)
+{
+	delete[] Data;
+	Data = other.Data;
+	Size = other.Size;
+	Capacity = other.Capacity;
+	other.Data = nullptr;
+	other.Size = other.Capacity = 0;
+}
+template<typename T>
+Vector<T>::Vector(Vector&& other) : Data(other.Data), Size(other.Size), Capacity(other.Capacity)
+{
+	other.Data = nullptr;
+	other.Size = other.Capacity = 0;
+}
+template<typename T>
+T* Vector<T>::begin()
+{
+	return Data;
+}
+template<typename T>
+T* Vector<T>::end()
+{
+	return Data +Size;
+}
+template<typename T>
+const T* Vector<T>::begin() const
+{
+	return Data;
+}
+template<typename T>
+const T* Vector<T>::end() const
+{
+	return Data + Size;
+}
+template<typename T>
+int Vector<T>::size()
+{
+	return Size;
+}
+template<typename T>
+int Vector<T>::capacity()
+{
+	return Capacity;
+}
 int main()
 {
-Vector<int> rustic(3);
-rustic[0] = 1;
-rustic[1] = 2;
-rustic[2] = 3;
-Vector<int> target = rustic;
-cout << target[1];
+Vector<int>rus(5);
+Vector<int> q(4);
+q = move(rus);
+cout << rus.size() << ' ' << q.size();
 return 0;
 }
 
